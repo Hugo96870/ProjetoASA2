@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <vector>
-#include <stack>
 
 using namespace std;
 
@@ -19,18 +18,17 @@ void processInput(int processes, int entries, vector<int>& ProcessorX, vector<in
 
     for(i = 0; i < processes; i++){
         scanf("%d %d", &X, &Y);
-        ProcessorX[i].pushback(X);
-        ProcessorY[i].pushback(Y);
+        ProcessorX.push_back(X);
+        ProcessorY.push_back(Y);
     }
-
-    for(int i = 0; i < processes; i++){
-        weights.insert(weights.begin() + i, vector<int>()); 
+    
+    for(i = 0; i < processes; i++) {
+        weights[i].assign(processes, 0);
     }
-
     for(i = 0; i < entries; i++){
         scanf("%d %d %d", &X, &Y, &weight);
-        weights[X][Y] = weight;
-        weights[Y][X] = weight;
+        weights[X-1].insert(weights[X-1].begin()+(Y-1), weight);
+        weights[Y-1].insert(weights[Y-1].begin()+(X-1), weight);
     }
 
 }
@@ -49,6 +47,10 @@ int main(){
     vector <vector <int>> weights;
 
     scanf("%d %d", &processes, &entries);
+
+    for(int i = 0; i < processes; i++){
+        weights.insert(weights.begin() + i, vector<int>());
+    }
 
     processInput(processes, entries, ProcessorX, ProcessorY, weights);
 
