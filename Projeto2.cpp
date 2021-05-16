@@ -89,9 +89,14 @@ void Push(int u, int v, vector<int>& excess, vector <vector <int>>& capacities, 
 }
 
 void Relabel(vector<int>& height, vector<vector<int>>& adjacencies, int u, vector <vector <int>>& capacities){
+    int old = height[u+1];
     height[u+1] = height[adjacencies[u][0] + 1] + 1;
     for(int i = 0; i < (int)adjacencies[u].size()-1; i++){
-        if(height[u + 1] > height[adjacencies[u][i+1]+1] && capacities[u+1][adjacencies[u][i+1]+1] > 0){
+        if(old == height[adjacencies[u][i+1]+1] && capacities[u+1][adjacencies[u][i+1]+1] > 0){
+            height[u+1] = 1 + height[adjacencies[u][i+1]+1];
+            break;
+        }
+        else if(height[u + 1] > height[adjacencies[u][i+1]+1] && capacities[u+1][adjacencies[u][i+1]+1] > 0){
             height[u+1] = 1 + height[adjacencies[u][i+1]+1];
         }
     }
