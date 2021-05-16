@@ -13,8 +13,8 @@
 using namespace std;
 
 void processInput(int processes, int entries, vector<int>& ProcessorX, vector<int>& ProcessorY, vector<vector<int>>& weights,
-        vector<vector<int>>& adjacencies, vector<int>& excess, vector<int>& height, vector <vector <int>>& capacities,
-                 vector <vector <int>>& flow){
+                  vector<vector<int>>& adjacencies, vector<int>& excess, vector<int>& height, vector <vector <int>>& capacities,
+                  vector <vector <int>>& flow){
 
     int i, X ,Y, weight;
 
@@ -35,7 +35,9 @@ void processInput(int processes, int entries, vector<int>& ProcessorX, vector<in
     }
 
     for(i = 0; i < processes; i++){
-        scanf("%d %d", &X, &Y);
+        if(!scanf("%d %d", &X, &Y)){
+            cout << "ERROR" << endl;
+        }
         ProcessorX.push_back(X);
         ProcessorY.push_back(Y);
         capacities[0][i+1] = X;
@@ -52,7 +54,9 @@ void processInput(int processes, int entries, vector<int>& ProcessorX, vector<in
     }
 
     for(i = 0; i < entries; i++){
-        scanf("%d %d %d", &X, &Y, &weight);
+        if(!scanf("%d %d %d", &X, &Y, &weight)){
+            cout << "ERROR" << endl;
+        }
         weights[Y-1][X-1] = weight;
         weights[X-1][Y-1] = weight;
         adjacencies[X-1].push_back(Y-1);
@@ -94,7 +98,7 @@ void Push(int u, int v, vector<int>& excess, vector <vector <int>>& capacities, 
 
 void Relabel(vector<int>& height, vector<vector<int>>& adjacencies, int u, vector <vector <int>>& capacities){
     height[u+1] = height[adjacencies[u][0] + 1] + 1;
-    for(int i = 0; i < adjacencies[u].size()-1; i++){
+    for(int i = 0; i < (int)adjacencies[u].size()-1; i++){
         if(height[u + 1] > height[adjacencies[u][i+1]+1] && capacities[u+1][adjacencies[u][i+1]+1] > 0){
             height[u+1] = 1 + height[adjacencies[u][i+1]+1];
         }
@@ -103,7 +107,7 @@ void Relabel(vector<int>& height, vector<vector<int>>& adjacencies, int u, vecto
 
 int VerifyHeight(int u, vector<int>& height, vector<vector<int>>& adjacencies, vector <vector <int>>& capacities){
     int result = 1;
-    for(int i = 0; i < adjacencies[u].size(); i++){
+    for(int i = 0; i < (int)adjacencies[u].size(); i++){
         if(height[u+1] > height[adjacencies[u][i]+1] && capacities[u+1][adjacencies[u][i]+1] > 0) {
             result = 0;
             break;
@@ -129,7 +133,7 @@ void Discharge(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX
         }
         else{
             i++;
-            if(i == (adjacencies[u].size())){
+            if(i == (int)(adjacencies[u].size())){
                 i = 0;
             }
             current[u] = adjacencies[u][i];
@@ -138,8 +142,8 @@ void Discharge(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX
 }
 
 int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX, vector<int>& ProcessorY,
-                    vector<vector<int>>& weights, int processes, vector<vector<int>>& adjacencies,
-                    vector <vector <int>>& capacities, vector <vector <int>>& flow){
+                   vector<vector<int>>& weights, int processes, vector<vector<int>>& adjacencies,
+                   vector <vector <int>>& capacities, vector <vector <int>>& flow){
 
     vector<int> L, Aux;
     vector<int> current;
@@ -150,7 +154,7 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
         L.push_back(i);
     }
 
-    for(i = 0; i < L.size(); i++){
+    for(i = 0; i < (int)L.size(); i++){
         current.push_back(adjacencies[i][0]);
     }
     u = L.front();
@@ -158,7 +162,7 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
         Aux.clear();
         oldheight = height[u+1];
         Discharge(excess, height, ProcessorX, ProcessorY, weights, adjacencies,
-                u, current, capacities, flow);
+                  u, current, capacities, flow);
         if(height[u+1] > oldheight){
             Aux.push_back(u);
             for(i = 1; i < processes+1; i++){
@@ -168,7 +172,7 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
             L.swap(Aux);
             index++;
         }
-        for(i = 0; i < L.size(); i++){
+        for(i = 0; i < (int)L.size(); i++){
             if(excess[i+1] > 0){
                 u = i;
                 break;
@@ -180,7 +184,7 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
 }
 
 int Output(vector<int>& excess, vector<int>& height, int processes, vector<int>& ProcessorX, vector<int>& ProcessorY,
-        vector<vector<int>>& weights, vector<vector<int>>& adjacencies, vector <vector <int>>& capacities, vector <vector <int>>& flow){
+           vector<vector<int>>& weights, vector<vector<int>>& adjacencies, vector <vector <int>>& capacities, vector <vector <int>>& flow){
 
     return RelableToFront(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies, capacities, flow);
 }
@@ -199,7 +203,9 @@ int main(){
     vector <int> height;
     vector <int> excess;
 
-    scanf("%d %d", &processes, &entries);
+    if(!scanf("%d %d", &processes, &entries)){
+        cout << "ERROR" << endl;
+    }
 
     for(int i = 0; i < processes; i++){
         weights.insert(weights.begin() + i, vector<int>());
@@ -207,7 +213,7 @@ int main(){
     }
 
     processInput(processes, entries, ProcessorX, ProcessorY, weights, adjacencies, height, excess,
-            capacities, flow);
+                 capacities, flow);
 
     output = Output(height, excess, processes, ProcessorX, ProcessorY, weights, adjacencies, capacities, flow);
 
