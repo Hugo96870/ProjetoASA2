@@ -9,7 +9,6 @@
 #include <list>
 
 #define S -1
-#define T -2
 
 using namespace std;
 
@@ -40,7 +39,7 @@ void processInput(int processes, int entries, vector<int>& ProcessorX, vector<in
         ProcessorX.push_back(X);
         ProcessorY.push_back(Y);
         capacities[0][i+1] = X;
-        capacities[i+1][processes + 2] = Y;
+        capacities[i+1][processes + 1] = Y;
     }
 
     for(i = 0; i < processes; i++) {
@@ -49,7 +48,7 @@ void processInput(int processes, int entries, vector<int>& ProcessorX, vector<in
 
     for(i = 0; i < processes; i++){
         adjacencies[i].push_back(S);
-        adjacencies[i].push_back(T);
+        adjacencies[i].push_back(processes);
     }
 
     for(i = 0; i < entries; i++){
@@ -75,7 +74,6 @@ void InicializePreFlow(vector<int>& excess, vector<int>& height, int processes, 
         capacities[0][i+1] -= ProcessorX[i];
         capacities[i+1][0] += ProcessorX[i];
         flow[0][i+1] += ProcessorX[i];
-        flow[i+1][0] -= ProcessorX[i];
         excess[0] -= ProcessorX[i];
     }
 }
@@ -90,27 +88,40 @@ void Push(int u, int v, vector<int>& excess, vector <vector <int>>& capacities, 
     flow[v+1][u+1] -= d;
     excess[u+1] -= d;
     excess[v+1] += d;
+    capacities[u+1][v+1] -= d;
+    capacities[v+1][u+1] += d;
 }
 
-void Relabel(vector<int>& height, vector<vector<int>>& adjacencies, int u){
-    height[u+1] = height[adjacencies[u][0]] + 1;
+void Relabel(vector<int>& height, vector<vector<int>>& adjacencies, int u, vector <vector <int>>& capacities){
+    height[u+1] = height[adjacencies[u][0] + 1] + 1;
     for(int i = 0; i < adjacencies[u].size()-1; i++){
-        if(height[u + 1] > height[adjacencies[u][i+1]]){
-            height[u+1] = 1 + height[adjacencies[u][i+1]];
+        if(height[u + 1] > height[adjacencies[u][i+1]+1] && capacities[u+1][adjacencies[u][i+1]+1] > 0){
+            height[u+1] = 1 + height[adjacencies[u][i+1]+1];
         }
     }
 }
 
+int VerifyHeight(int u, vector<int>& height, vector<vector<int>>& adjacencies, vector <vector <int>>& capacities){
+    int result = 1;
+    for(int i = 0; i < adjacencies[u].size(); i++){
+        if(height[u+1] > height[adjacencies[u][i]+1] && capacities[u+1][adjacencies[u][i]+1] > 0) {
+            result = 0;
+            break;
+        }
+    }
+    return result;
+}
+
 void Discharge(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX, vector<int>& ProcessorY,
-               vector<vector<int>>& weights, int processes, vector<vector<int>>& adjacencies, int u, vector<int> current,
+               vector<vector<int>>& weights, vector<vector<int>>& adjacencies, int u, vector<int> current,
                vector <vector <int>>& capacities, vector <vector <int>>& flow){
     int v;
+    int i = 0;
 
-    while(excess[u] > 0){
+    while(excess[u+1] > 0){
         v = current[u];
-        int i = 0;
-        if(height[u+1] == height[v+1]){
-            Relabel(height , capacities, u);
+        if(VerifyHeight(u, height, adjacencies, capacities)){
+            Relabel(height , adjacencies, u, capacities);
             current[u] = adjacencies[u][i];
         }
         else if(capacities[u+1][v+1] > 0 && height[u+1] == height[v+1]+1){
@@ -118,21 +129,21 @@ void Discharge(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX
         }
         else{
             i++;
+            if(i == (adjacencies[u].size())){
+                i = 0;
+            }
             current[u] = adjacencies[u][i];
         }
     }
 }
 
-void RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX, vector<int>& ProcessorY,
+int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX, vector<int>& ProcessorY,
                     vector<vector<int>>& weights, int processes, vector<vector<int>>& adjacencies,
                     vector <vector <int>>& capacities, vector <vector <int>>& flow){
 
-    vector<int> L;
+    vector<int> L, Aux;
     vector<int> current;
     int i, u, oldheight, index = 0;
-    vector<int>::iterator itrBegin = L.begin();
-
-    vector<int>::iterator itrErase;
 
     InicializePreFlow(excess, height, processes, ProcessorX, ProcessorY, capacities, flow);
     for (i = 0; i < processes; i++) {
@@ -140,46 +151,38 @@ void RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proce
     }
 
     for(i = 0; i < L.size(); i++){
-        current[i] = adjacencies[i][0];
+        current.push_back(adjacencies[i][0]);
     }
     u = L.front();
-    itrErase = L.begin();
     while(u != -1){
+        Aux.clear();
         oldheight = height[u+1];
-        Discharge(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies,
+        Discharge(excess, height, ProcessorX, ProcessorY, weights, adjacencies,
                 u, current, capacities, flow);
         if(height[u+1] > oldheight){
-            L.erase(itrErase);
-            L.insert(itrBegin, 1, u);
+            Aux.push_back(u);
+            for(i = 1; i < processes+1; i++){
+                if(L[i-1] != u)
+                    Aux.push_back(L[i-1]);
+            }
+            L.swap(Aux);
             index++;
         }
         for(i = 0; i < L.size(); i++){
             if(excess[i+1] > 0){
                 u = i;
-                itrErase = L.begin()+i;
                 break;
             }
             u = -1;
         }
     }
-
-
+    return excess[processes+1];
 }
-
-int MinimumCut(){
-    return 0;
-}
-
 
 int Output(vector<int>& excess, vector<int>& height, int processes, vector<int>& ProcessorX, vector<int>& ProcessorY,
         vector<vector<int>>& weights, vector<vector<int>>& adjacencies, vector <vector <int>>& capacities, vector <vector <int>>& flow){
-    int result;
 
-    RelableToFront(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies, capacities, flow);
-
-    result = MinimumCut();
-
-    return result;
+    return RelableToFront(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies, capacities, flow);
 }
 
 
