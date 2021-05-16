@@ -212,4 +212,6 @@ int main(){
     output = Output(height, excess, processes, ProcessorX, ProcessorY, weights, adjacencies, capacities, flow);
 
     cout << output << endl;
+
+    return 0;
 }
