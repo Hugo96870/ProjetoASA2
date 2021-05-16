@@ -13,7 +13,7 @@
 using namespace std;
 
 void processInput(int processes, int entries, vector<int>& ProcessorX, vector<int>& ProcessorY, vector<vector<int>>& weights,
-                  vector<vector<int>>& adjacencies, vector<int>& excess, vector<int>& height, vector <vector <int>>& capacities,
+                  vector<vector<int>>& adjacencies, vector<int>& height, vector<int>& excess, vector <vector <int>>& capacities,
                   vector <vector <int>>& flow){
 
     int i, X ,Y, weight;
@@ -24,31 +24,23 @@ void processInput(int processes, int entries, vector<int>& ProcessorX, vector<in
     excess.assign(processes + 2, 0);
     height.assign(processes + 2, 0);
 
-    for(i=0; i< processes + 2; i++){
+    for(i = 0; i < processes+2; i++) {
         flow.insert(flow.begin()+i, vector<int>());
         capacities.insert(capacities.begin()+i, vector<int>());
-    }
-
-    for(i = 0; i < processes+2; i++) {
         capacities[i].assign(processes + 2, 0);
         flow[i].assign(processes + 2, 0);
     }
-
     for(i = 0; i < processes; i++){
-        if(!scanf("%d %d", &X, &Y)){
+        if (!scanf("%d %d", &X, &Y)) {
             cout << "ERROR" << endl;
         }
+        weights.insert(weights.begin() + i, vector<int>());
+        adjacencies.insert(adjacencies.begin() + i, vector<int>());
         ProcessorX.push_back(X);
         ProcessorY.push_back(Y);
-        capacities[0][i+1] = X;
-        capacities[i+1][processes + 1] = Y;
-    }
-
-    for(i = 0; i < processes; i++) {
+        capacities[0][i + 1] = X;
+        capacities[i + 1][processes + 1] = Y;
         weights[i].assign(processes, 0);
-    }
-
-    for(i = 0; i < processes; i++){
         adjacencies[i].push_back(S);
         adjacencies[i].push_back(processes);
     }
@@ -145,32 +137,27 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
                    vector<vector<int>>& weights, int processes, vector<vector<int>>& adjacencies,
                    vector <vector <int>>& capacities, vector <vector <int>>& flow){
 
-    vector<int> L, Aux;
+    vector<int> Aux;
+    list<int> L;
     vector<int> current;
-    int i, u, oldheight, index = 0;
+    int i, u, oldheight;
 
     InicializePreFlow(excess, height, processes, ProcessorX, ProcessorY, capacities, flow);
     for (i = 0; i < processes; i++) {
         L.push_back(i);
-    }
-
-    for(i = 0; i < (int)L.size(); i++){
         current.push_back(adjacencies[i][0]);
     }
+
     u = L.front();
+
     while(u != -1){
         Aux.clear();
         oldheight = height[u+1];
         Discharge(excess, height, ProcessorX, ProcessorY, weights, adjacencies,
                   u, current, capacities, flow);
         if(height[u+1] > oldheight){
-            Aux.push_back(u);
-            for(i = 1; i < processes+1; i++){
-                if(L[i-1] != u)
-                    Aux.push_back(L[i-1]);
-            }
-            L.swap(Aux);
-            index++;
+            L.remove(u);
+            L.push_front(u);
         }
         for(i = 0; i < (int)L.size(); i++){
             if(excess[i+1] > 0){
@@ -183,7 +170,7 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
     return excess[processes+1];
 }
 
-int Output(vector<int>& excess, vector<int>& height, int processes, vector<int>& ProcessorX, vector<int>& ProcessorY,
+int Output(vector<int>& height, vector<int>& excess, int processes, vector<int>& ProcessorX, vector<int>& ProcessorY,
            vector<vector<int>>& weights, vector<vector<int>>& adjacencies, vector <vector <int>>& capacities, vector <vector <int>>& flow){
 
     return RelableToFront(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies, capacities, flow);
@@ -205,11 +192,6 @@ int main(){
 
     if(!scanf("%d %d", &processes, &entries)){
         cout << "ERROR" << endl;
-    }
-
-    for(int i = 0; i < processes; i++){
-        weights.insert(weights.begin() + i, vector<int>());
-        adjacencies.insert(adjacencies.begin() + i, vector<int>());
     }
 
     processInput(processes, entries, ProcessorX, ProcessorY, weights, adjacencies, height, excess,
