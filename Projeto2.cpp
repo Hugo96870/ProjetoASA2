@@ -1,6 +1,6 @@
 /* 2nd ASA Project
    Group 50
-   Bernardo CastiÃ§o ist196845
+   Bernardo Castico ist196845
    Hugo Rita ist 196870
    */
 
@@ -113,22 +113,32 @@ void Discharge(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX
                vector <vector <int>>& capacities, vector <vector <int>>& flow){
     int v;
     int i = 0;
+    int aux = 1;
 
     while(excess[u+1] > 0){
         v = current[u];
-        if(VerifyHeight(u, height, adjacencies, capacities)){
+        if(aux && VerifyHeight(u, height, adjacencies, capacities)){
             Relabel(height , adjacencies, u, capacities);
             current[u] = adjacencies[u][i];
+            aux = 0;
         }
         else if(capacities[u+1][v+1] > 0 && height[u+1] == height[v+1]+1){
             Push(u, v, excess, capacities, flow);
+            aux = 1;
         }
         else{
             i++;
-            if(i == (int)(adjacencies[u].size())){
+            if (i == (int) (adjacencies[u].size())) {
                 i = 0;
             }
             current[u] = adjacencies[u][i];
+            while(height[u+1] <= height[current[u]+1]){
+                i++;
+                if (i == (int) (adjacencies[u].size())) {
+                    i = 0;
+                }
+                current[u] = adjacencies[u][i];
+            }
         }
     }
 }
@@ -159,12 +169,12 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
             L.remove(u);
             L.push_front(u);
         }
+        u = -1;
         for(i = 0; i < (int)L.size(); i++){
             if(excess[i+1] > 0){
                 u = i;
                 break;
             }
-            u = -1;
         }
     }
     return excess[processes+1];
