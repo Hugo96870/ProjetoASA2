@@ -165,7 +165,7 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
 
     u = L.front();
 
-    while(u != -1){
+    while(excess[0] != -excess[processes + 1]){
         Aux.clear();
         oldheight = height[u+1];
         Discharge(excess, height, ProcessorX, ProcessorY, weights, adjacencies,
@@ -174,11 +174,12 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
             L.remove(u);
             L.push_front(u);
         }
-        u = -1;
-        for(i = 0; i < (int)L.size(); i++){
-            if(excess[i+1] > 0){
-                u = i;
-                break;
+        if(excess[0] != -excess[processes + 1]){
+            for(i = 0; i < (int)L.size(); i++){
+                if(excess[i+1] > 0){
+                    u = i;
+                    break;
+                }
             }
         }
     }
