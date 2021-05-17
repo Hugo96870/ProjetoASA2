@@ -204,8 +204,7 @@ int main(){
     processInput(processes, entries, ProcessorX, ProcessorY, weights, adjacencies, height, excess,
                  capacities, flow);
 
-    output = RelableToFront(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies,
-                            capacities, flow);
+    output = RelableToFront(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies, capacities, flow);
 
     cout << output << endl;
 
