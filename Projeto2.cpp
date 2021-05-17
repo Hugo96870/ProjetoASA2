@@ -185,14 +185,6 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
     return excess[processes+1];
 }
 
-int Output(vector<int>& height, vector<int>& excess, int processes, vector<int>& ProcessorX, vector<int>& ProcessorY,
-           vector<vector<int>>& weights, vector<vector<int>>& adjacencies, vector <vector <int>>& capacities, vector <vector <int>>& flow){
-
-    return RelableToFront(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies, capacities, flow);
-}
-
-
-
 int main(){
     int output, processes, entries;
 
@@ -212,7 +204,8 @@ int main(){
     processInput(processes, entries, ProcessorX, ProcessorY, weights, adjacencies, height, excess,
                  capacities, flow);
 
-    output = Output(height, excess, processes, ProcessorX, ProcessorY, weights, adjacencies, capacities, flow);
+    output = RelableToFront(excess, height, ProcessorX, ProcessorY, weights, processes, adjacencies,
+                            capacities, flow);
 
     cout << output << endl;
 
