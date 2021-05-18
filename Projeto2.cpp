@@ -1,4 +1,4 @@
-/* 2nd ASA Project
+/* -2nd ASA Project
    Group 50
    Bernardo Castico ist196845
    Hugo Rita ist 196870
@@ -88,65 +88,35 @@ void Push(int u, int v, vector<int>& excess, vector <vector <int>>& capacities, 
     capacities[v+1][u+1] += d;
 }
 
-void Relabel(vector<int>& height, vector<vector<int>>& adjacencies, int u, vector <vector <int>>& capacities){
-    int old = height[u+1];
-    height[u+1] = height[adjacencies[u][0] + 1] + 1;
-    for(int i = 0; i < (int)adjacencies[u].size()-1; i++){
-        if(old == height[adjacencies[u][i+1]+1] && capacities[u+1][adjacencies[u][i+1]+1] > 0){
-            height[u+1] = 1 + height[adjacencies[u][i+1]+1];
-            break;
-        }
-        else if(height[u + 1] > height[adjacencies[u][i+1]+1] && capacities[u+1][adjacencies[u][i+1]+1] > 0){
-            height[u+1] = 1 + height[adjacencies[u][i+1]+1];
-        }
-    }
-}
-
-int VerifyHeight(int u, vector<int>& height, vector<vector<int>>& adjacencies, vector <vector <int>>& capacities){
-    int result = 1;
-    for(int i = 0; i < (int)adjacencies[u].size(); i++){
-        if(height[u+1] > height[adjacencies[u][i]+1] && capacities[u+1][adjacencies[u][i]+1] > 0) {
-            result = 0;
-            break;
-        }
-    }
-    return result;
-}
-
 void Discharge(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX, vector<int>& ProcessorY,
-               vector<vector<int>>& weights, vector<vector<int>>& adjacencies, int u, vector<int> current,
+               vector<vector<int>>& weights, vector<vector<int>>& adjacencies, int u,
                vector <vector <int>>& capacities, vector <vector <int>>& flow){
-    int v;
-    int i = 0;
-    int aux = 1;
+
+    int aux = adjacencies[u][0];
+    vector<int>::iterator iter;
 
     while(excess[u+1] > 0){
-        v = current[u];
-        if(aux && VerifyHeight(u, height, adjacencies, capacities)){
-            Relabel(height , adjacencies, u, capacities);
-            current[u] = adjacencies[u][i];
-            aux = 0;
-        }
-        else if(capacities[u+1][v+1] > 0 && height[u+1] == height[v+1]+1){
-            Push(u, v, excess, capacities, flow);
-            aux = 1;
-        }
-        else{
-            i++;
-            if (i == (int) (adjacencies[u].size())) {
-                i = 0;
-            }
-            current[u] = adjacencies[u][i];
-            while(height[u+1] <= height[current[u]+1]){
-                i++;
-                if (i == (int) (adjacencies[u].size())) {
-                    i = 0;
+        for(iter = adjacencies[u].begin(); iter != adjacencies[u].end(); iter++) {
+            if(capacities[u + 1][*iter + 1] > 0) {
+                if (height[u + 1] == height[*iter + 1] + 1) {
+                    Push(u, *iter, excess, capacities, flow);
+                    if (excess[u + 1] == 0)
+                        break;
                 }
-                current[u] = adjacencies[u][i];
+                else if(height[aux + 1] > height[*iter + 1]){
+                    aux = *iter;
+                    if (height[aux + 1] == height[u + 1])
+                        break;
+                }
             }
+        }
+        if(excess[u+1] > 0) {
+            height[u + 1] = 1 + height[aux + 1];
+            aux = adjacencies[u][0];
         }
     }
 }
+
 
 int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX, vector<int>& ProcessorY,
                    vector<vector<int>>& weights, int processes, vector<vector<int>>& adjacencies,
@@ -154,13 +124,11 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
 
     vector<int> Aux;
     list<int> L;
-    vector<int> current;
     int i, u, oldheight;
 
     InicializePreFlow(excess, height, processes, ProcessorX, ProcessorY, capacities, flow);
     for (i = 0; i < processes; i++) {
         L.push_back(i);
-        current.push_back(adjacencies[i][0]);
     }
 
     u = L.front();
@@ -169,7 +137,7 @@ int RelableToFront(vector<int>& excess, vector<int>& height, vector<int>& Proces
         Aux.clear();
         oldheight = height[u+1];
         Discharge(excess, height, ProcessorX, ProcessorY, weights, adjacencies,
-                  u, current, capacities, flow);
+                  u, capacities, flow);
         if(height[u+1] > oldheight){
             L.remove(u);
             L.push_front(u);
