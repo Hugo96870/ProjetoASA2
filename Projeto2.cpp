@@ -98,12 +98,12 @@ void Discharge(vector<int>& excess, vector<int>& height, vector<int>& ProcessorX
     while(excess[u+1] > 0){
         for(iter = adjacencies[u].begin(); iter != adjacencies[u].end(); iter++) {
             if(capacities[u + 1][*iter + 1] > 0) {
-                if (height[u + 1] == height[*iter + 1] + 1) {
+                if (height[u + 1] == height[*iter + 1] + 1 || height[u + 1] > height[*iter +1]) {
                     Push(u, *iter, excess, capacities, flow);
                     if (excess[u + 1] == 0)
                         break;
                 }
-                else if(height[aux + 1] > height[*iter + 1]){
+                else{
                     aux = *iter;
                     if (height[aux + 1] == height[u + 1])
                         break;
